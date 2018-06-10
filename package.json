@@ -1,7 +1,7 @@
 {
   "name": "dev-loop",
   "version": "1.0.0",
-  "description": "",
+  "description": "A Networking App for Developers",
   "main": "server.js",
   "scripts": {
     "start": "node server/server.js",
@@ -12,7 +12,7 @@
     "url": "git+https://github.com/back2bas1cs/dev-loop.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "JD",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/back2bas1cs/dev-loop/issues"

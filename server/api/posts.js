@@ -9,5 +9,4 @@ posts.get('/test', (req, res) => {
   res.json({ msg: 'we postin' });
 });
 
-
 module.exports = posts;

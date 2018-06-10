@@ -7,24 +7,21 @@ const auth = require('../server/api/auth');
 const profile = require('../server/api/profile');
 const posts = require('../server/api/posts');
 
+const PORT = process.env.PORT || 3030;
 const app = express();
 
 // bodyParser MW: construct req.body (from stream/chunks) and analyze it for form data
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-const PORT = process.env.PORT || 3030;
-
 // require in our DB config.
 const db = require('../config/mongo').mongoURI;
-
 // connect to mongoDB/mLab
-mongoose
-  .connect(db)
+mongoose.connect(db)
   .then(() => console.log('connected to mongoDB/mLab!'))
-  .catch(err => console.log(err));
+  .catch(err => console.log("errrrrrrr", err));
 
-
+// NOTE: test index route
 app.get('/', (req, res) => res.json('hello my name is JD'));
 
 // map and deploy routes
