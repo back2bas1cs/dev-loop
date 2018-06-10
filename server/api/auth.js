@@ -53,4 +53,24 @@ auth.post('/register', (req, res) => {
   });
 });
 
+
+// @route:  POST api/auth/login
+// @desc:   user login (returns JWT token)
+// @access: public
+auth.post('/login', (req, res) => {
+  const email = req.body.email;
+  const password = req.body.password;
+  User.findOne({ email })
+    .then(user => {
+      // check if user exists (email registration)
+      if (!user) res.status(404).json({ email: 'Unregistered email' });
+      // check if password is correct
+      bcrypt.compare(password, user.password)
+        .then(areMatching => {
+          if (areMatching) res.json({ msg: 'Success'});
+          else res.status(400).json({ password: 'Incorrect email & password combination!'})
+        });
+    });
+});
+
 module.exports = auth;

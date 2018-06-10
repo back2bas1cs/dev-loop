@@ -18,8 +18,8 @@ app.use(bodyParser.json());
 const db = require('../config/mongo').mongoURI;
 // connect to mongoDB/mLab
 mongoose.connect(db)
-  .then(() => console.log('connected to mongoDB/mLab!'))
-  .catch(err => console.log("errrrrrrr", err));
+  .then(() => console.log('connected to MongoDB/mLab!'))
+  .catch(err => console.log('MongoDB Connection failure:', err));
 
 // NOTE: test index route
 app.get('/', (req, res) => res.json('hello my name is JD'));
