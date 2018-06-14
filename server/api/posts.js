@@ -1,5 +1,6 @@
 const express = require('express');
 
+// initialize router
 const posts = express.Router();
 
 // @route:  GET api/posts/test

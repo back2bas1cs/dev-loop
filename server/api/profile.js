@@ -1,5 +1,6 @@
 const express = require('express');
 
+// initialize router
 const profile = express.Router();
 
 // @route:  GET api/profile/test

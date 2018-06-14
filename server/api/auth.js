@@ -1,23 +1,26 @@
 const express = require('express');
 const gravatar = require('gravatar');
 const bcrypt =  require('bcryptjs');
+const JWT = require('jsonwebtoken');
+const passport = require('passport');
 
-const auth = express.Router();
-
-// require in mongoose User model
+const user_secret = require('../../config/authConfig').USER_SECRET;
 const User = require('../models/User');
 
-// @route:  GET api/auth/test
-// @desc:   NOTE: test auth route
-// @access: public
-auth.get('/test', (req, res) => {
-  res.json({ msg: 'we authin' });
-});
+const validateRegistrationInput = require('../validation/validateRegistration');
+// initialize auth router
+const auth = express.Router();
 
 // @route:  POST api/auth/register
-// @desc:   register new user
+// @descr:  register new user
 // @access: public (can only register if not already signed in)
 auth.post('/register', (req, res) => {
+  const { registrationErrors } = validateRegistrationInput(req.body);
+  // name validation
+  if (true) {
+    return res.status(400).json(registrationErrors);
+  }
+
   // check (by email) to see if user already exists
   User.findOne({ email: req.body.email })
     .then(user => {
@@ -53,9 +56,8 @@ auth.post('/register', (req, res) => {
   });
 });
 
-
 // @route:  POST api/auth/login
-// @desc:   user login (returns JWT token)
+// @descr:  user login (returns JWT token)
 // @access: public
 auth.post('/login', (req, res) => {
   const email = req.body.email;
@@ -64,13 +66,35 @@ auth.post('/login', (req, res) => {
     .then(user => {
       // check if user exists (email registration)
       if (!user) res.status(404).json({ email: 'Unregistered email' });
-      // check if password is correct
+      // use bCrypt to check if client-side password matches stored/hashed password
       bcrypt.compare(password, user.password)
-        .then(areMatching => {
-          if (areMatching) res.json({ msg: 'Success'});
-          else res.status(400).json({ password: 'Incorrect email & password combination!'})
+        .then(passwordMatch => {
+          if (passwordMatch) {
+            const payload = {
+              id: user.id,
+              name: user.name,
+              avatar: user.avatar
+            };
+            // "sign" JWT and send back to client so they may access protected routes
+            JWT.sign(payload, user_secret, { expiresIn: (4 * 3600) }, (err, token) => {
+              res.json({
+                success: true,
+                token: 'Bearer ' + token
+              });
+            });
+          } else {
+            res.status(401).json({ password: 'Incorrect email/password combination!'});
+          }
         });
     });
+});
+
+// @route:  GET api/auth/user
+// @descr:  return current user
+// @access: private (add passport middleware)
+auth.get('/user', passport.authenticate( 'jwt', { session: false }), (req, res) => {
+  // QUESTION: why does the data save to req.user
+  res.json(req.user);
 });
 
 module.exports = auth;
