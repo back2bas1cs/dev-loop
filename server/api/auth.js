@@ -8,6 +8,8 @@ const user_secret = require('../../config/authConfig').USER_SECRET;
 const User = require('../models/User');
 
 const validateRegistrationInput = require('../validation/validateRegistration');
+const validateLoginInput = require('../validation/validateLogin');
+
 // initialize auth router
 const auth = express.Router();
 
@@ -16,7 +18,7 @@ const auth = express.Router();
 // @access: public (can only register if not already signed in)
 auth.post('/register', (req, res) => {
   const { registrationErrors, areErrors } = validateRegistrationInput(req.body);
-  // registration input (name/email validation
+  // registration input { name, email, password(s) } validation
   if (areErrors) {
     return res.status(400).json(registrationErrors);
   }
@@ -25,7 +27,8 @@ auth.post('/register', (req, res) => {
     .then(user => {
       // if user exists, throw error
       if (user) {
-        res.status(400).json({ email: 'That email is already registered with devLoop!' });
+        registrationErrors['email'].push('That email is already registered with devLoop!');
+        res.status(400).json(registrationErrors);
       } else {
         // add avatar/icon from gravatar (check to see if email exists)
         const avatar = gravatar.url(req.body.email, {
@@ -59,12 +62,24 @@ auth.post('/register', (req, res) => {
 // @descr:  user login (returns JWT token)
 // @access: public
 auth.post('/login', (req, res) => {
+
+  const { loginErrors, areErrors } = validateLoginErrors(req.body);
+
+  // check registration input { name, email, password(s) } validation for errors
+  if (areErrors) {
+    return res.status(400).json(loginErrors);
+  }
+
   const email = req.body.email;
   const password = req.body.password;
+
   User.findOne({ email })
     .then(user => {
       // check if user exists (email registration)
-      if (!user) res.status(404).json({ email: 'Unregistered email' });
+      if (!user) {
+        loginErrors['email'].push('unregistered email');
+        res.status(404).json(loginErrors);
+      }
       // use bCrypt to check if client-side password matches stored/hashed password
       bcrypt.compare(password, user.password)
         .then(passwordMatch => {
@@ -83,7 +98,8 @@ auth.post('/login', (req, res) => {
               });
             });
           } else {
-            res.status(401).json({ password: 'Incorrect email/password combination!'});
+            loginErrors['password'].push('Incorrect email/password combination!');
+            res.status(401).json(loginErrors);
           }
         });
     });
