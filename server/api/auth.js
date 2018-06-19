@@ -15,18 +15,17 @@ const auth = express.Router();
 // @descr:  register new user
 // @access: public (can only register if not already signed in)
 auth.post('/register', (req, res) => {
-  const { registrationErrors } = validateRegistrationInput(req.body);
-  // name validation
-  if (true) {
+  const { registrationErrors, areErrors } = validateRegistrationInput(req.body);
+  // registration input (name/email validation
+  if (areErrors) {
     return res.status(400).json(registrationErrors);
   }
-
   // check (by email) to see if user already exists
   User.findOne({ email: req.body.email })
     .then(user => {
       // if user exists, throw error
       if (user) {
-        return res.status(400).json({ email: 'That email is already registered with devLoop!' });
+        res.status(400).json({ email: 'That email is already registered with devLoop!' });
       } else {
         // add avatar/icon from gravatar (check to see if email exists)
         const avatar = gravatar.url(req.body.email, {
@@ -70,6 +69,7 @@ auth.post('/login', (req, res) => {
       bcrypt.compare(password, user.password)
         .then(passwordMatch => {
           if (passwordMatch) {
+            // initialize JWT payload
             const payload = {
               id: user.id,
               name: user.name,
@@ -93,7 +93,7 @@ auth.post('/login', (req, res) => {
 // @descr:  return current user
 // @access: private (add passport middleware)
 auth.get('/user', passport.authenticate( 'jwt', { session: false }), (req, res) => {
-  // QUESTION: why does the data save to req.user
+  // NOTE: why does the data save to req.user???
   res.json(req.user);
 });
 
