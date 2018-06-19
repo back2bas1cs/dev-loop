@@ -1,7 +1,7 @@
 // use validator to help filter/authorize user registration input
 const validator = require('validator');
 
-const { areErrors, isEmptyField } = require('./validationHelpers');
+const { areLoginErrors, isEmptyField } = require('./validationHelpers');
 
 module.exports = function validateLoginInput(input) {
 
@@ -15,7 +15,7 @@ module.exports = function validateLoginInput(input) {
     console.log(prop)
     if (isEmptyField(input[prop])) {
       let both = (prop === 'password' ? 'both' : '');
-      loginErrors[prop].push(`${both} ${prop} field(s) is/are required`)
+      loginErrors[prop].push(`${both} ${prop}(s) required`)
     };
   }
 
@@ -26,6 +26,6 @@ module.exports = function validateLoginInput(input) {
 
   return {
     loginErrors,
-    areErrors: areErrors(loginErrors)
+    areLoginErrors: areLoginErrors(loginErrors)
   }
 }
