@@ -4,13 +4,13 @@ const bcrypt =  require('bcryptjs');
 const JWT = require('jsonwebtoken');
 const passport = require('passport');
 
-const user_secret = require('../../config/authConfig').USER_SECRET;
 const User = require('../models/User');
+const user_secret = require('../../config/authConfig').USER_SECRET;
 
 const validateRegistrationInput = require('../validation/validateRegistration');
 const validateLoginInput = require('../validation/validateLogin');
 
-// initialize auth router
+// initialize AUTHORIZATION (aka: "auth") router
 const auth = express.Router();
 
 // @route:  POST api/auth/register
@@ -20,7 +20,7 @@ auth.post('/register', (req, res) => {
 
   const { registrationErrors, isValidRegistration } = validateRegistrationInput(req.body);
 
-  // check registration input validation (i.e. name, email, password, password-confirmation) for errors
+  // check registration input validation (i.e. name, email, password, password_confirmation) for errors
   if (!isValidRegistration) {
     return res.status(400).json(registrationErrors);
   }
@@ -81,7 +81,7 @@ auth.post('/login', (req, res) => {
       // check if user exists (via email registration)
       if (!user) {
         // throw unregistered email error here, where we have access to DB
-        loginErrors['email'].push('unregistered email');
+        loginErrors['email'].push('email is not registered with devLoop');
         res.status(404).json(loginErrors);
       }
       // use bcrypt to check if client-side password matches stored/hashed password
@@ -102,20 +102,12 @@ auth.post('/login', (req, res) => {
               });
             });
           } else {
-            // throw error if given email is registered, but submitted/input password does not match our encrypted password stored in DB
+            // throw error if given email is registered, but submitted/input password does not match encrypted password stored in DB
             loginErrors['password'].push('incorrect email/password combination');
             res.status(401).json(loginErrors);
           }
         });
     });
-});
-
-// @route:  GET api/auth/user
-// @descr:  return current user
-// @access: private (add passport middleware)
-auth.get('/user', passport.authenticate( 'jwt', { session: false }), (req, res) => {
-  // NOTE: why does the data save to req.user???
-  res.json(req.user);
 });
 
 module.exports = auth;

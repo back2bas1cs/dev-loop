@@ -4,7 +4,11 @@ const Schema = mongoose.Schema;
 
 // build/initialize PROFILE schema
 const Profile = new Schema({
-  user: {
+  date: {
+    type: Date,
+    default: Date.now()
+  },
+  user_id: {
     type: Schema.Types.ObjectId,
     ref: 'users'
   },
@@ -20,6 +24,12 @@ const Profile = new Schema({
   location: { type: String },
   company: { type: String },
   website: { type: String },
+  social: {
+    linkedin: { type: String },
+    facebook: { type: String },
+    twitter: { type: String },
+    youtube: { type: String }
+  },
   github: { type: String },
   bio: { type: String },
   education: [
@@ -28,8 +38,35 @@ const Profile = new Schema({
         type: String,
         required: true
       },
-
-    },
+      location: { type: String },
+      degree: {
+        type: String,
+        required: true
+      },
+      fieldOfStudy: {
+        type: String,
+        required: true
+      },
+      gpa: {
+        type: Number
+      },
+      startDate: {
+        type: Date,
+        required: true
+      },
+      endDate: {
+        type: Date,
+        default: Date.now()
+      },
+      organizations: {
+        name: {
+          type: String,
+          required: true
+        },
+        roles: [String],
+        description: { type: String }
+      }
+    }
   ],
   experience: [
     {
@@ -53,8 +90,7 @@ const Profile = new Schema({
       summary: { type: String }
     }
   ],
-  skills: { type: [String], required: true },
-
+  skills: { type: [String], required: true }
 });
 
 module.exports = mongoose.model('profile', Profile);

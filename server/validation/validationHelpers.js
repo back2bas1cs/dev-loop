@@ -9,7 +9,7 @@ module.exports = {
         }
       }
     }
-    return JSON.stringify(input) !== '{"name":[],"email":[],"password":[],"password-confirmation":[]}';
+    return JSON.stringify(input) !== '{"name":[],"email":[],"password":[],"password_confirmation":[]}';
   },
 
   areLoginErrors: input => {
@@ -20,7 +20,6 @@ module.exports = {
         }
       }
     }
-    console.log(JSON.stringify(input))
     return JSON.stringify(input) !== '{"email":[],"password":[]}';
   },
 

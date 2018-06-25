@@ -6,14 +6,14 @@ const { areRegistrationErrors, isEmptyField } = require('./validationHelpers');
 module.exports = function validateRegistrationInput(input) {
 
   // all possible types of REGISTRATION errors
-  let registrationErrors = {
+  const registrationErrors = {
     name: [],
     email: [],
     password: [],
-    'password-confirmation': []
+    password_confirmation: []
   };
 
-  // first, check if any of the REGISTRATION input fields are empty (i.e. name, email, password, password-confirmation) -- this should be the first error we pop off the "error stack"
+  // first, check if any of the REGISTRATION input fields are empty (i.e. name, email, password, password_confirmation) -- this should be the first error we pop off the "error stack"
   for (let prop in input) {
     if (isEmptyField(input[prop])) {
       registrationErrors[prop].push(`${prop} required`);
@@ -30,7 +30,7 @@ module.exports = function validateRegistrationInput(input) {
     registrationErrors['name'].push(`name must be less than ${NAME_MAX} characters long`);
   }
 
-  // @REGISTRATION-mail-validation:
+  // @REGISTRATION-email-validation:
   if (!validator.isEmail(input.email)) {
     registrationErrors['email'].push('invalid email');
   }
@@ -54,8 +54,8 @@ module.exports = function validateRegistrationInput(input) {
 
 
   // password confirmation (both input passwords must match)
-  if (!validator.equals(input.password, input['password-confirmation'])) {
-    registrationErrors['password-confirmation'].push('passwords do not match. please try again');
+  if (!validator.equals(input.password, input.password_confirmation)) {
+    registrationErrors['password_confirmation'].push('passwords do not match. please try again');
   }
 
   return {

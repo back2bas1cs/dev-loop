@@ -6,7 +6,7 @@ const { areLoginErrors, isEmptyField } = require('./validationHelpers');
 module.exports = function validateLoginInput(input) {
 
   // all possible types of LOGIN errors
-  let loginErrors = {
+  const loginErrors = {
     email: [],
     password: []
   };
