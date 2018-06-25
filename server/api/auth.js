@@ -80,6 +80,7 @@ auth.post('/login', (req, res) => {
     .then(user => {
       // check if user exists (via email registration check)
       if (!user) {
+        // throw unregistered email error here, where we have access to DB
         loginErrors['email'].push('unregistered email');
         res.status(404).json(loginErrors);
       }
@@ -94,13 +95,14 @@ auth.post('/login', (req, res) => {
               avatar: user.avatar
             };
             // "sign" JWT and send back to client so they may access protected routes
-            JWT.sign(payload, user_secret, { expiresIn: (4 * 3600) }, (err, token) => {
+            JWT.sign(payload, user_secret, { expiresIn: ( 4 * 3600 ) }, (err, token) => {
               res.json({
                 success: true,
                 token: 'Bearer ' + token
               });
             });
           } else {
+            // if given email is registered but submitted/input password does not match our encrypted password stored in DB, throw error 
             loginErrors['password'].push('incorrect email/password combination');
             res.status(401).json(loginErrors);
           }

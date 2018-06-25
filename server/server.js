@@ -13,11 +13,11 @@ mongoose.connect(db)
 
 const app = express();
 
-// bodyParser MW: construct req.body (from stream/chunks) and analyze it for form data
+// bodyParser middleware: construct req.body (from stream/chunks) and analyze for form data
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-// passport MW
+// passport middleware
 app.use(passport.initialize());
 // require in passport config.
 require('../config/passport')(passport);
