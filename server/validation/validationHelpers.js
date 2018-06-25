@@ -1,5 +1,5 @@
-// returns true if input is an empty Object
 module.exports = {
+
   areRegistrationErrors: input => {
     // pre-ECMA 5
     if (input.constructor === Object && Object.keys(input).length === 4) {
@@ -9,7 +9,7 @@ module.exports = {
         }
       }
     }
-    return JSON.stringify(input) !== '{"name":[],"email":[],"password":[],"confirmPassword":[]}';
+    return JSON.stringify(input) !== '{"name":[],"email":[],"password":[],"password-confirmation":[]}';
   },
 
   areLoginErrors: input => {
@@ -20,7 +20,8 @@ module.exports = {
         }
       }
     }
-    return JSON.stringify(input) !== '{"name":[],"email":[]}';
+    console.log(JSON.stringify(input))
+    return JSON.stringify(input) !== '{"email":[],"password":[]}';
   },
 
   isEmptyField: input => {

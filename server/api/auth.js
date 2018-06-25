@@ -15,19 +15,22 @@ const auth = express.Router();
 
 // @route:  POST api/auth/register
 // @descr:  register new user
-// @access: public (can only register if not already signed in)
+// @access: public (can only register if user is NOT already signed in)
 auth.post('/register', (req, res) => {
-  const { registrationErrors, areErrors } = validateRegistrationInput(req.body);
+
+  const { registrationErrors, isValidRegistration } = validateRegistrationInput(req.body);
+
   // registration input { name, email, password(s) } validation
-  if (areErrors) {
+  if (!isValidRegistration) {
     return res.status(400).json(registrationErrors);
   }
+
   // check (by email) to see if user already exists
   User.findOne({ email: req.body.email })
     .then(user => {
       // if user exists, throw error
       if (user) {
-        registrationErrors['email'].push('That email is already registered with devLoop!');
+        registrationErrors['email'].push('email is already registered with devLoop');
         res.status(400).json(registrationErrors);
       } else {
         // add avatar/icon from gravatar (check to see if email exists)
@@ -63,10 +66,10 @@ auth.post('/register', (req, res) => {
 // @access: public
 auth.post('/login', (req, res) => {
 
-  const { loginErrors, areErrors } = validateLoginErrors(req.body);
+  const { loginErrors, isValidLogin } = validateLoginInput(req.body);
 
   // check registration input { name, email, password(s) } validation for errors
-  if (areErrors) {
+  if (!isValidLogin) {
     return res.status(400).json(loginErrors);
   }
 
@@ -75,7 +78,7 @@ auth.post('/login', (req, res) => {
 
   User.findOne({ email })
     .then(user => {
-      // check if user exists (email registration)
+      // check if user exists (via email registration check)
       if (!user) {
         loginErrors['email'].push('unregistered email');
         res.status(404).json(loginErrors);
@@ -98,7 +101,7 @@ auth.post('/login', (req, res) => {
               });
             });
           } else {
-            loginErrors['password'].push('Incorrect email/password combination!');
+            loginErrors['password'].push('incorrect email/password combination');
             res.status(401).json(loginErrors);
           }
         });
