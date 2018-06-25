@@ -20,12 +20,12 @@ auth.post('/register', (req, res) => {
 
   const { registrationErrors, isValidRegistration } = validateRegistrationInput(req.body);
 
-  // registration input { name, email, password(s) } validation
+  // check registration input validation (i.e. name, email, password, password-confirmation) for errors
   if (!isValidRegistration) {
     return res.status(400).json(registrationErrors);
   }
 
-  // check (by email) to see if user already exists
+  // check (via email) to see if user already exists
   User.findOne({ email: req.body.email })
     .then(user => {
       // if user exists, throw error
@@ -33,13 +33,13 @@ auth.post('/register', (req, res) => {
         registrationErrors['email'].push('email is already registered with devLoop');
         res.status(400).json(registrationErrors);
       } else {
-        // add avatar/icon from gravatar (check to see if email exists)
+        // add avatar/icon from gravatar (check to see if email is registered with gravatar, else assign default user icon)
         const avatar = gravatar.url(req.body.email, {
           s: '100', // size
           r: 'pg',  // photo rating (let's keep things PG)
           d: 'mm'   // use default icon
         });
-        // introduce new User model instance
+        // introduce new user model instance
         const newUser = new User({
           name: req.body.name,
           email: req.body.email,
@@ -51,7 +51,7 @@ auth.post('/register', (req, res) => {
           bcrypt.hash(newUser.password, salt, (err, hash) => {
             if (err) throw err;
             newUser.password = hash;
-            // save() new instance of User to our DB, with encrypted password
+            // save() new instance of user to our DB, with encrypted password
             newUser.save()
               .then(user => res.status(200).json(user))
               .catch(err => console.log(err));
@@ -68,7 +68,7 @@ auth.post('/login', (req, res) => {
 
   const { loginErrors, isValidLogin } = validateLoginInput(req.body);
 
-  // check registration input { name, email, password(s) } validation for errors
+  // check login input validation (i.e. email, password) for errors
   if (!isValidLogin) {
     return res.status(400).json(loginErrors);
   }
@@ -78,13 +78,13 @@ auth.post('/login', (req, res) => {
 
   User.findOne({ email })
     .then(user => {
-      // check if user exists (via email registration check)
+      // check if user exists (via email registration)
       if (!user) {
         // throw unregistered email error here, where we have access to DB
         loginErrors['email'].push('unregistered email');
         res.status(404).json(loginErrors);
       }
-      // use bCrypt to check if client-side password matches stored/hashed password
+      // use bcrypt to check if client-side password matches stored/hashed password
       bcrypt.compare(password, user.password)
         .then(passwordMatch => {
           if (passwordMatch) {
@@ -102,7 +102,7 @@ auth.post('/login', (req, res) => {
               });
             });
           } else {
-            // if given email is registered but submitted/input password does not match our encrypted password stored in DB, throw error 
+            // throw error if given email is registered, but submitted/input password does not match our encrypted password stored in DB
             loginErrors['password'].push('incorrect email/password combination');
             res.status(401).json(loginErrors);
           }

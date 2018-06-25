@@ -1,11 +1,11 @@
-// use validator to help filter/authorize user registration input
+// use validator to help filter/authorize user REGISTRATION input
 const validator = require('validator');
 
 const { areRegistrationErrors, isEmptyField } = require('./validationHelpers');
 
 module.exports = function validateRegistrationInput(input) {
 
-  // all possible types of registration errors
+  // all possible types of REGISTRATION errors
   let registrationErrors = {
     name: [],
     email: [],
@@ -13,7 +13,7 @@ module.exports = function validateRegistrationInput(input) {
     'password-confirmation': []
   };
 
-  // first, check if any of the input fields are empty (i.e. name, email, password, password-confirmation) -- this should be the first error we pop off the "error stack"
+  // first, check if any of the REGISTRATION input fields are empty (i.e. name, email, password, password-confirmation) -- this should be the first error we pop off the "error stack"
   for (let prop in input) {
     if (isEmptyField(input[prop])) {
       registrationErrors[prop].push(`${prop} required`);
@@ -53,7 +53,7 @@ module.exports = function validateRegistrationInput(input) {
   // TODO: password must contain at least one number and one upper-case letter
 
 
-  // password confirmation (both passwords must match)
+  // password confirmation (both input passwords must match)
   if (!validator.equals(input.password, input['password-confirmation'])) {
     registrationErrors['password-confirmation'].push('passwords do not match. please try again');
   }

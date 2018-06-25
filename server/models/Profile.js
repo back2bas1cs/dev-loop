@@ -2,7 +2,6 @@ const mongoose = require('mongoose');
 
 const Schema = mongoose.Schema;
 
-
 // build/initialize PROFILE schema
 const Profile = new Schema({
   user: {
@@ -55,7 +54,6 @@ const Profile = new Schema({
     }
   ],
   skills: { type: [String], required: true },
-
 
 });
 

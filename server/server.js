@@ -13,16 +13,16 @@ mongoose.connect(db)
 
 const app = express();
 
-// bodyParser middleware: construct req.body (from stream/chunks) and analyze for form data
+// body-parser middleware: construct req.body (from stream/chunks) and analyze for form data
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 // passport middleware
 app.use(passport.initialize());
-// require in passport config.
+// bring in passport config.
 require('../config/passport')(passport);
 
-// import routes for user authentication, profiles, and network posts
+// import routes for user authentication, profiles, and network feed/posts
 const auth = require('../server/api/auth');
 const profile = require('../server/api/profile');
 const posts = require('../server/api/posts');
