@@ -1,7 +1,7 @@
 // use validator to help filter/authorize user LOGIN input
 const validator = require('validator');
 
-const { areLoginErrors, isEmptyField } = require('./validationHelpers');
+const { areErrors, isEmptyField } = require('./validationHelpers');
 
 module.exports = function validateLoginInput(input) {
 
@@ -11,10 +11,10 @@ module.exports = function validateLoginInput(input) {
     password: []
   };
 
-  // first, check if any of the LOGIN input fields are empty (i.e. email, password) -- this should always be the first error we pop off the "error stack"
+  // first, check if any LOGIN input fields are empty -- this should always be the first error we pop off the given "error stack"
   for (let prop in input) {
     if (isEmptyField(input[prop])) {
-      loginErrors[prop].push(`${prop} required`);
+      loginErrors[prop].push(`${prop} is required`);
     };
   }
 
@@ -25,6 +25,6 @@ module.exports = function validateLoginInput(input) {
 
   return {
     loginErrors,
-    isValidLogin: !areLoginErrors(loginErrors)
-  }
+    isValidLogin: !areErrors(loginErrors)
+  };
 }

@@ -1,7 +1,7 @@
 // use validator to help filter/authorize user REGISTRATION input
 const validator = require('validator');
 
-const { areRegistrationErrors, isEmptyField } = require('./validationHelpers');
+const { areErrors, isEmptyField } = require('./validationHelpers');
 
 module.exports = function validateRegistrationInput(input) {
 
@@ -13,19 +13,18 @@ module.exports = function validateRegistrationInput(input) {
     password_confirmation: []
   };
 
-  // first, check if any of the REGISTRATION input fields are empty (i.e. name, email, password, password_confirmation) -- this should be the first error we pop off the "error stack"
+  // first, check if any REGISTRATION input fields are empty -- this should always be the first error we pop off the given "error stack"
   for (let prop in input) {
     if (isEmptyField(input[prop])) {
-      registrationErrors[prop].push(`${prop} required`);
+      registrationErrors[prop].push(`${prop} is required`);
     };
   }
 
   // @REGISTRATION-name-validation:
-  // set min/max limit on characters in name
-  const NAME_MIN = 3, NAME_MAX = 30;
-
+  // set min/max limit on characters on name
+  const NAME_MIN = 2, NAME_MAX = 30;
   if (!validator.isLength(input.name, { min: NAME_MIN })) {
-    registrationErrors['name'].push(`name must be more than ${NAME_MIN - 1} characters long`);
+    registrationErrors['name'].push(`name must be at least ${NAME_MIN} characters long`);
   } else if (!validator.isLength(input.name, { max: NAME_MAX })) {
     registrationErrors['name'].push(`name must be less than ${NAME_MAX} characters long`);
   }
@@ -34,11 +33,9 @@ module.exports = function validateRegistrationInput(input) {
   if (!validator.isEmail(input.email)) {
     registrationErrors['email'].push('invalid email');
   }
-
   // @REGISTRATION-password-validation:
   // set min/max character limit on password
   const PW_MIN = 7, PW_MAX = 25;
-
   if (!validator.isLength(input.password, { min: PW_MIN })) {
     registrationErrors['password'].push(`password must be at least ${PW_MIN} characters long`);
   } else if (!validator.isLength(input.password, { max: PW_MAX })) {
@@ -60,6 +57,6 @@ module.exports = function validateRegistrationInput(input) {
 
   return {
     registrationErrors,
-    isValidRegistration: !areRegistrationErrors(registrationErrors)
-  }
+    isValidRegistration: !areErrors(registrationErrors)
+  };
 }

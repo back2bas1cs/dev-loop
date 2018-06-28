@@ -9,7 +9,7 @@ const db = require('../config/dbConfig').mongoURI;
 // connect to mongoDB/mLab
 mongoose.connect(db)
   .then(() => console.log('connected to MongoDB/mLab!'))
-  .catch(err => console.log('MongoDB Connection failure:', err));
+  .catch(err => console.log('error connecting to MongoDB/mLab:', err));
 
 const app = express();
 

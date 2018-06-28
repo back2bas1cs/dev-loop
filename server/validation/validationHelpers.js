@@ -1,30 +1,27 @@
 module.exports = {
 
-  areRegistrationErrors: input => {
-    // pre-ECMA 5
-    if (input.constructor === Object && Object.keys(input).length === 4) {
-      for (var prop in input) {
-        if (input[prop].constructor !== Array || input[prop].length !== 0) {
-          return true;
-        }
-      }
-    }
-    return JSON.stringify(input) !== '{"name":[],"email":[],"password":[],"password_confirmation":[]}';
-  },
-
-  areLoginErrors: input => {
-    if (input.constructor === Object && Object.keys(input).length === 2) {
-      for (var prop in input) {
-        if (input[prop].constructor !== Array || input[prop].length !== 0) {
-          return true;
-        }
-      }
-    }
-    return JSON.stringify(input) !== '{"email":[],"password":[]}';
-  },
-
   isEmptyField: input => {
     return (input.constructor === String || typeof input === 'string') &&
-      input.length === 0;
+    input.length === 0;
+  },
+
+  areErrors: input => {
+    const errorTypes = Object.keys(input);
+    // pre-ECMA 5
+    if (input.constructor === Object) {
+      for (var prop in input) {
+        if (input[prop].constructor !== Array || input[prop].length !== 0) {
+          return true;
+        }
+      }
+    }
+    // build JSON string of error types
+    let jsonErrors = '{';
+    for (let i = 0; i < errorTypes.length; i++) {
+  	   jsonErrors += `"${errorTypes[i]}":[]`;
+       jsonErrors += `${i === errorTypes.length - 1 ? '}' : ','}`;
+     }
+     // check against JSON stringified errors
+    return JSON.stringify(input) !== jsonErrors;
   }
 }

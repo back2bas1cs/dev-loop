@@ -17,14 +17,11 @@ const auth = express.Router();
 // @descr:  register new user
 // @access: public (can only register if user is NOT already signed in)
 auth.post('/register', (req, res) => {
-
   const { registrationErrors, isValidRegistration } = validateRegistrationInput(req.body);
-
-  // check registration input validation (i.e. name, email, password, password_confirmation) for errors
+  // check registration input validation for errors
   if (!isValidRegistration) {
     return res.status(400).json(registrationErrors);
   }
-
   // check (via email) to see if user already exists
   User.findOne({ email: req.body.email })
     .then(user => {
@@ -37,9 +34,9 @@ auth.post('/register', (req, res) => {
         const avatar = gravatar.url(req.body.email, {
           s: '100', // size
           r: 'pg',  // photo rating (let's keep things PG)
-          d: 'mm'   // use default icon
+          d: 'mm'   // use default user icon
         });
-        // introduce new user model instance
+        // build new user model instance
         const newUser = new User({
           name: req.body.name,
           email: req.body.email,
@@ -65,49 +62,48 @@ auth.post('/register', (req, res) => {
 // @descr:  user login (returns JWT token)
 // @access: public
 auth.post('/login', (req, res) => {
-
   const { loginErrors, isValidLogin } = validateLoginInput(req.body);
-
-  // check login input validation (i.e. email, password) for errors
+  // check login input validation for errors
   if (!isValidLogin) {
     return res.status(400).json(loginErrors);
   }
-
+  // store input email and password
   const email = req.body.email;
   const password = req.body.password;
-
   User.findOne({ email })
     .then(user => {
       // check if user exists (via email registration)
       if (!user) {
-        // throw unregistered email error here, where we have access to DB
+        // throw unregistered email error here, where we access DB
         loginErrors['email'].push('email is not registered with devLoop');
         res.status(404).json(loginErrors);
-      }
-      // use bcrypt to check if client-side password matches stored/hashed password
-      bcrypt.compare(password, user.password)
-        .then(passwordMatch => {
-          if (passwordMatch) {
-            // initialize JWT payload
-            const payload = {
-              id: user.id,
-              name: user.name,
-              avatar: user.avatar
-            };
-            // "sign" JWT and send back to client so they may access protected routes
-            JWT.sign(payload, user_secret, { expiresIn: ( 4 * 3600 ) }, (err, token) => {
-              res.json({
-                success: true,
-                token: 'Bearer ' + token
+      } else {
+        // use bcrypt to check if client-side password matches stored/hashed password
+        bcrypt.compare(password, user.password)
+          .then(passwordMatch => {
+            if (passwordMatch) {
+              // initialize JWT payload
+              const payload = {
+                id: user.id,
+                name: user.name,
+                avatar: user.avatar
+              };
+              // "sign" JWT and send back to client so they may access protected routes
+              JWT.sign(payload, user_secret, { expiresIn: ( 4 * 3600 ) }, (err, token) => {
+                res.json({
+                  success: true,
+                  token: 'Bearer ' + token
+                });
               });
-            });
-          } else {
-            // throw error if given email is registered, but submitted/input password does not match encrypted password stored in DB
-            loginErrors['password'].push('incorrect email/password combination');
-            res.status(401).json(loginErrors);
-          }
-        });
-    });
+            } else {
+              // throw error if given email is registered, but submitted/input password does not match encrypted password stored in DB
+              loginErrors['password'].push('incorrect email/password combination');
+              res.status(401).json(loginErrors);
+            }
+          })
+          .catch(err => console.log(err));
+        };
+      });
 });
 
 module.exports = auth;
