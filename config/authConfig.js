@@ -1,3 +1,3 @@
 module.exports = {
-  USER_SECRET: 'secret'
+  USER_SECRET: 'thisissupersecret'
 };

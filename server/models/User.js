@@ -10,8 +10,8 @@ const User = new Schema({
   },
   email: {
     type: String,
-    required: true,
-    unique: true
+    unique: true,
+    required: true
   },
   password: {
     type: String,
@@ -20,7 +20,8 @@ const User = new Schema({
   avatar: { type: String },
   date: {
     type: Date,
-    default: Date.now() }
+    default: Date.now()
+  }
 });
 
 module.exports = mongoose.model('user', User);

@@ -8,9 +8,9 @@ const Profile = new Schema({
     type: Date,
     default: Date.now()
   },
-  user_id: {
+  user: {
     type: Schema.Types.ObjectId,
-    ref: 'users'
+    ref: 'user'
   },
   handle: {
     type: String,
@@ -21,8 +21,8 @@ const Profile = new Schema({
     type: String,
     required: true
   },
-  // location: { type: String },
-  // company: { type: String },
+  location: { type: String },
+  company: { type: String },
   website: { type: String },
   social: {
     linkedin: { type: String },
@@ -31,8 +31,14 @@ const Profile = new Schema({
     youtube: { type: String }
   },
   github: { type: String },
-  bio: { type: String },
-  // skills: { type: [String], required: true },
+  bio: {
+    type: String,
+    max: 400
+  },
+  skills: {
+    type: [String],
+    required: true
+  },
 
   // education: [
   //   {
@@ -73,29 +79,29 @@ const Profile = new Schema({
   //     //   description: { type: String }
   //     // }
   //   }
-  // ],
-  // experience: [
-  //   {
-  //     role: {
-  //       type: String,
-  //       required: true
-  //     },
-  //     company: {
-  //       type: String,
-  //       required: true
-  //     },
-  //     location: { type: String },
-  //     startDate: {
-  //       type: Date,
-  //       required: true
-  //     },
-  //     endDate: {
-  //       type: Date,
-  //       default: Date.now()
-  //     },
-  //     summary: { type: String }
-  //   }
-  // ],
+  // ]
+  experience: [
+    {
+      role: {
+        type: String,
+        required: true
+      },
+      company: {
+        type: String,
+        required: true
+      },
+      location: { type: String },
+      startDate: {
+        type: Date,
+        required: true
+      },
+      endDate: {
+        type: Date,
+        default: Date.now()
+      },
+      summary: { type: String }
+    }
+  ]
 });
 
 module.exports = mongoose.model('profile', Profile);

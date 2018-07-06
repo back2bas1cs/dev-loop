@@ -1,5 +1,4 @@
 module.exports = {
-
   isEmptyField: input => {
     return (input.constructor === String || typeof input === 'string') &&
     input.length === 0;

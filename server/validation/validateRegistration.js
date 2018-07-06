@@ -1,10 +1,9 @@
 // use validator to help filter/authorize user REGISTRATION input
 const validator = require('validator');
 
-const { areErrors, isEmptyField } = require('./validationHelpers');
+const { areErrors, isEmptyField } = require('./validationHelpers.js');
 
 module.exports = function validateRegistrationInput(input) {
-
   // all possible types of REGISTRATION errors
   const registrationErrors = {
     name: [],
@@ -33,6 +32,7 @@ module.exports = function validateRegistrationInput(input) {
   if (!validator.isEmail(input.email)) {
     registrationErrors['email'].push('invalid email');
   }
+  
   // @REGISTRATION-password-validation:
   // set min/max character limit on password
   const PW_MIN = 7, PW_MAX = 25;

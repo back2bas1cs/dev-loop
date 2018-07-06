@@ -3,9 +3,9 @@ const JWTStrat = require('passport-jwt').Strategy;
 const ExtractJWT = require('passport-jwt').ExtractJwt;
 const mongoose = require('mongoose');
 
-const User = require('../server/models/User');
+const User = require('../server/models/User.js');
 
-const user_secret = require('./authConfig').USER_SECRET;
+const user_secret = require('./authConfig.js').USER_SECRET;
 
 // configure passport JWT options
 const ppOptions = {

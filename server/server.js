@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 
 // require in DB config.
-const db = require('../config/dbConfig').mongoURI;
+const db = require('../config/dbConfig.js').mongoURI;
 
 // connect to mongoDB/mLab
 mongoose.connect(db)
@@ -20,17 +20,17 @@ app.use(bodyParser.json());
 // passport middleware
 app.use(passport.initialize());
 // bring in passport config.
-require('../config/passport')(passport);
+require('../config/passport.js')(passport);
 
 // import routes for user authentication, profiles, and network feed/posts
-const auth = require('../server/api/auth');
-const profile = require('../server/api/profile');
-const posts = require('../server/api/posts');
+const auth = require('../server/api/auth.js');
+const profile = require('../server/api/profile.js');
+const feed = require('../server/api/feed.js');
 
 // map and deploy routes
 app.use('/api/auth', auth);
 app.use('/api/profile', profile);
-app.use('/api/posts', posts);
+app.use('/api/feed', feed);
 
 const PORT = process.env.PORT || 3030;
 

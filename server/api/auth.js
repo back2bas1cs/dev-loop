@@ -4,11 +4,11 @@ const bcrypt =  require('bcryptjs');
 const JWT = require('jsonwebtoken');
 const passport = require('passport');
 
-const User = require('../models/User');
-const user_secret = require('../../config/authConfig').USER_SECRET;
+const User = require('../models/User.js');
+const user_secret = require('../../config/authConfig.js').USER_SECRET;
 
-const validateRegistrationInput = require('../validation/validateRegistration');
-const validateLoginInput = require('../validation/validateLogin');
+const validateRegistrationInput = require('../validation/validateRegistration.js');
+const validateLoginInput = require('../validation/validateLogin.js');
 
 // initialize AUTHORIZATION (aka: "auth") router
 const auth = express.Router();
@@ -32,7 +32,7 @@ auth.post('/register', (req, res) => {
       } else {
         // add avatar/icon from gravatar (check to see if email is registered with gravatar, else assign default user icon)
         const avatar = gravatar.url(req.body.email, {
-          s: '100', // size
+          s: '300', // size
           r: 'pg',  // photo rating (let's keep things PG)
           d: 'mm'   // use default user icon
         });
@@ -89,7 +89,7 @@ auth.post('/login', (req, res) => {
                 avatar: user.avatar
               };
               // "sign" JWT and send back to client so they may access protected routes
-              JWT.sign(payload, user_secret, { expiresIn: ( 4 * 3600 ) }, (err, token) => {
+              JWT.sign(payload, user_secret, { expiresIn: ( 6 * 3600 ) }, (err, token) => {
                 res.json({
                   success: true,
                   token: 'Bearer ' + token

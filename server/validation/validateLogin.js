@@ -1,7 +1,7 @@
 // use validator to help filter/authorize user LOGIN input
 const validator = require('validator');
 
-const { areErrors, isEmptyField } = require('./validationHelpers');
+const { areErrors, isEmptyField } = require('./validationHelpers.js');
 
 module.exports = function validateLoginInput(input) {
 
