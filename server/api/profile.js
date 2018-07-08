@@ -6,6 +6,7 @@ const User = require('../models/User.js');
 
 const validateProfileInput = require('../validation/validateProfile.js');
 const validateEducationInput = require('../validation/validateEducation.js');
+// const validateFieldAndDegreeInput = require('../validation/validateFieldAndDegree.js');
 const validateExperienceInput = require('../validation/validateExperience.js');
 
 // initialize PROFILE (aka: "prof") router
@@ -15,6 +16,7 @@ const prof = express.Router();
 // @descr:  create/update user profile
 // @access: private (add passport middleware)
 prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+
   const { profileErrors, isValidProfile } = validateProfileInput(req.body);
   // check PROFILE input validation for errors
   if (!isValidProfile) {
@@ -22,7 +24,7 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   }
 
   const userProfile = {
-    // name, email, and avatar are attached to user ID
+    // name, email, and avatar are attached to user id
     user: req.user.id,
     handle: req.body.handle || null,
     title: req.body.title || null,
@@ -42,7 +44,7 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
     skills: req.body.skills.split(',') || null
   };
 
-  // find user's profile in DB by user ID
+  // find user's profile in DB by user id
   Profile.findOne({ user: req.user.id })
     .then(profile => {
       if (!profile) {
@@ -79,14 +81,14 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
                 { new: true }
               )
               .then(updatedProfile => {
-                res.status(200).json(updatedProfile)
+                res.status(200).json(updatedProfile);
               })
               .catch(err => res.status(404).json(err));
             }
           })
           .catch(err => res.status(400).json(err));
       }
-    })
+    });
 });
 
 // @route:  GET api/profile
@@ -142,7 +144,7 @@ prof.get('/user/:user_id', (req, res)=> {
 });
 
 // @route:  GET api/profile/all
-// @descr:  retrieve all user's profiles (if they exist)
+// @descr:  retrieve all user's profiles (if any exist)
 // @access: public
 prof.get('/all', (req, res) => {
   Profile.find()
@@ -161,7 +163,8 @@ prof.get('/all', (req, res) => {
 // @route:  POST api/profile/education
 // @descr:  add new education section to profile
 // @access: private
-prof.post('/education', passport.authenticate({ session: false }), (req, res) => {
+prof.post('/education', passport.authenticate('jwt', { session: false }), (req, res) => {
+
   const { educationErrors, isValidEducation } = validateEducationInput(req.body);
   // check EDUCATION input validation for errors
   if (!isValidEducation) {
@@ -170,21 +173,79 @@ prof.post('/education', passport.authenticate({ session: false }), (req, res) =>
 
   Profile.findOne({ user: req.user.id })
     .then(profile => {
-      const newEducation = {};
+      const newEducationSection = {
+        school: req.body.school,
+        location: req.body.location,
+        startDate: req.body.startDate,
+        endDate: req.body.endDate
+      };
+      // add new experience to experience array (from Profile model)
+      profile.education.unshift(newEducationSection);
+      profile.save()
+        .then(updatedProfile => {
+          res.status(200).json(updatedProfile);
+        })
+        .catch(err => res.status(500).json(err));
+    });
+});
 
+// @route:  DELETE api/profile/education/:education_id
+// @descr:  delete given education section from user's profile
+// @access: private
+prof.delete('/education/:education_id', passport.authenticate('jwt', { session: false}), (req, res) => {
+  Profile.findOne({ user: req.user.id })
+    .then(profile => {
+      // filter out education section from array, and re-assign updated array
+      const updatedEducation = profile.education
+        .filter(section =>section.id !== req.params.education_id);
+      profile.education = updatedEducation;
+      // save profile with updated education
+      profile.save()
+        .then(updatedProfile => res.json(updatedProfile));
     })
+    .catch(err => res.status(404).json(err));
+});
 
+// @route:  POST api/profile/education/degree
+// @descr:  add new field and degree to given education section of profile
+// @access: private
+prof.get('/education/:education_id', passport.authenticate('jwt', { session: false }), (req, res) => {
+
+  // const { degreeErrors, isValidDegree } = validateFieldAndDegreeInput(req.body);
+  // // check EDUCATION input validation for errors
+  // if (!isValidDegree) {
+  //   return res.status(400).json(degreeErrors);
+  // }
+  //
+  // Profile.findOne({ user: req.user.id })
+  //   .then(profile => {
+  //     if (profile) {
+  //       profile.education
+  //         .filter(item => item.id === req.params.education_id)
+  //     Profile.findOneAndUpdate(
+  //         { user: req.user.id },
+  //         // object model we want to use to update document
+  //         { $set: userProfile },
+  //         // return newly UPDATED version of document
+  //         { new: true }
+  //       )
+  //     console.log(...education)
+  //
+  //     }
+  //
+  //   });
 
 });
 
 // @route:  POST api/profile/experience
 // @descr:  add new experience section to profile
 // @access: private
-prof.post('/experience', passport.authenticate({ session: false }), (req, res) => {
+prof.post('/experience', passport.authenticate('jwt', { session: false }), (req, res) => {
+
   const { experienceErrors, isValidExperience } = validateExperienceInput(req.body);
-  // check EDUCATION input validation for errors
+  // check EXPERIENCE input validation for errors
   if (!isValidExperience) {
-    return res.status(400).json(experience);
+    return res.status(400).json(experienceErrors);
   }
 
   Profile.findOne({ user: req.user.id })
@@ -197,15 +258,31 @@ prof.post('/experience', passport.authenticate({ session: false }), (req, res) =
         endDate: req.body.endDate,
         summary: req.body.summary
       };
-
+      // add new experience to experience array (from Profile model)
       profile.experience.unshift(newExperienceSection);
-
       profile.save()
         .then(updatedProfile => {
-          res.status(200).json(updatedProfile)
-        });
+          res.status(200).json(updatedProfile);
+        })
+        .catch(err => res.status(500).json(err));
+    });
+});
 
+// @route:  DELETE api/profile/experience/:experience_id
+// @descr:  delete given experience section from user's profile
+// @access: private
+prof.delete('/experience/:experience_id', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.findOne({ user: req.user.id })
+    .then(profile => {
+      // filter out experience section from array, and re-assign updated array
+      const updatedExperience = profile.experience
+        .filter(section => section.id !== req.params.experience_id);
+      profile.experience = updatedExperience;
+      // save profile with updated experience
+      profile.save()
+        .then(updatedProfile => res.status(200).json(updatedProfile));
     })
+    .catch(err => res.status(404).json(err));
 });
 
 module.exports = prof;

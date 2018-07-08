@@ -17,6 +17,7 @@ const auth = express.Router();
 // @descr:  register new user
 // @access: public (can only register if user is NOT already signed in)
 auth.post('/register', (req, res) => {
+
   const { registrationErrors, isValidRegistration } = validateRegistrationInput(req.body);
   // check registration input validation for errors
   if (!isValidRegistration) {
@@ -62,6 +63,7 @@ auth.post('/register', (req, res) => {
 // @descr:  user login (returns JWT token)
 // @access: public
 auth.post('/login', (req, res) => {
+
   const { loginErrors, isValidLogin } = validateLoginInput(req.body);
   // check login input validation for errors
   if (!isValidLogin) {

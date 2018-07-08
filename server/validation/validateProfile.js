@@ -4,6 +4,7 @@ const validator = require('validator');
 const { areErrors, isEmptyField } = require('./validationHelpers.js');
 
 module.exports = function validateProfileInput(input) {
+
   // all possible (required) types of PROFILE errors
   const profileErrors = {
     handle: [],
@@ -13,8 +14,10 @@ module.exports = function validateProfileInput(input) {
 
   // first, check if any required PROFILE input fields are empty -- this should always be the first error we pop off the given "error stack"
   for (let prop in profileErrors) {
-    if (isEmptyField(input[prop]) && prop !== 'skills') {
-      profileErrors[prop].push(`${prop} is required`);
+    if (isEmptyField(input[prop]) &&
+      profileErrors[prop] !== undefined &&
+      prop !== 'skills') {
+        profileErrors[prop].push(`${prop} is required`);
     };
   }
 

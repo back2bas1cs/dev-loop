@@ -4,6 +4,7 @@ const validator = require('validator');
 const { areErrors, isEmptyField } = require('./validationHelpers.js');
 
 module.exports = function validateRegistrationInput(input) {
+
   // all possible types of REGISTRATION errors
   const registrationErrors = {
     name: [],
@@ -14,7 +15,7 @@ module.exports = function validateRegistrationInput(input) {
 
   // first, check if any REGISTRATION input fields are empty -- this should always be the first error we pop off the given "error stack"
   for (let prop in input) {
-    if (isEmptyField(input[prop])) {
+    if (isEmptyField(input[prop]) && registrationErrors[prop] !== undefined) {
       registrationErrors[prop].push(`${prop} is required`);
     };
   }
@@ -32,7 +33,7 @@ module.exports = function validateRegistrationInput(input) {
   if (!validator.isEmail(input.email)) {
     registrationErrors['email'].push('invalid email');
   }
-  
+
   // @REGISTRATION-password-validation:
   // set min/max character limit on password
   const PW_MIN = 7, PW_MAX = 25;

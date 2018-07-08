@@ -5,18 +5,20 @@ const { areErrors, isEmptyField } = require('./validationHelpers.js');
 
 module.exports = function validateEducationInput(input) {
 
-  // all possible types of EDUCATION errors
+  // all possible (required) types of EDUCATION errors
   const educationErrors = {
-
+    school: [],
+    fieldOfStudy: [],
+    degree: [],
+    startDate: []
   };
 
   // first, check if any EDUCATION input fields are empty -- this should always be the first error we pop off the given "error stack"
   for (let prop in input) {
-    if (isEmptyField(input[prop])) {
+    if (isEmptyField(input[prop]) && educationErrors[prop] !== undefined) {
       educationErrors[prop].push(`${prop} is required`);
     };
   }
-
 
   return {
     educationErrors,

@@ -39,47 +39,48 @@ const Profile = new Schema({
     type: [String],
     required: true
   },
-
-  // education: [
-  //   {
-  //     school: {
-  //       type: String,
-  //       required: true
-  //     },
-  //     location: { type: String },
-  //     fieldAndDegree: [
-  //       {
-  //         fieldOfStudy: {
-  //           type: String,
-  //           required: true
-  //         },
-  //         degree: {
-  //           type: String,
-  //           required: true
-  //         },
-  //         gpa: {
-  //           type: Number
-  //         }
-  //       }
-  //     ],
-  //     startDate: {
-  //       type: Date,
-  //       required: true
-  //     },
-  //     endDate: {
-  //       type: Date,
-  //       default: Date.now()
-  //     },
-  //     // organizations: {
-  //     //   name: {
-  //     //     type: String,
-  //     //     required: true
-  //     //   },
-  //     //   roles: [String],
-  //     //   description: { type: String }
-  //     // }
-  //   }
-  // ]
+  // (new) education section
+  education: [
+    {
+      school: {
+        type: String,
+        required: true
+      },
+      location: { type: String },
+      fieldAndDegree: [
+        {
+          fieldOfStudy: {
+            type: String,
+            required: true
+          },
+          degree: {
+            type: String,
+            required: true
+          },
+          gpa: {
+            type: Number
+          }
+        }
+      ],
+      startDate: {
+        type: Date,
+        required: true
+      },
+      endDate: {
+        type: Date,
+        default: Date.now()
+      }
+      // organizations: {
+      //   name: {
+      //     type: String,
+      //     required: true
+      //   },
+      //   roles: [String],
+      //   description: { type: String }
+      // }
+    }
+  ],
+  // new experience section
   experience: [
     {
       role: {
