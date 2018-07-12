@@ -9,7 +9,7 @@ const Post = require('../models/Post.js');
 // bring in Profile model so we can check user before allowing deletion of posts
 const Profile = require('../models/Profile.js');
 
-// initialize router
+// initialize FEED/POSTS (aka: "feed") router
 const feed = express.Router();
 
 // @route:  POST api/feed
@@ -95,6 +95,8 @@ feed.delete('/:post_id', passport.authenticate('jwt', { session: false}), (req, 
     });
 });
 
+
+// NOTE: unfinished
 // @route:  POST api/feed/thumbsup/:post_id
 // @desc:   give "thumbs up" to a post (by post id)
 // @access: private
