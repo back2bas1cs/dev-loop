@@ -1,13 +1,13 @@
 const express = require('express');
 
 // initialize router
-const posts = express.Router();
+const feed = express.Router();
 
-// @route:  GET api/posts/test
-// @desc:   test post route
+// @route:  GET api/feed/test
+// @desc:   test feed route
 // @access: public
-posts.get('/test', (req, res) => {
+feed.get('/test', (req, res) => {
   res.json({ msg: 'we postin' });
 });
 
-module.exports = posts;
+module.exports = feed;

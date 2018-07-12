@@ -4,6 +4,8 @@ const bcrypt =  require('bcryptjs');
 const JWT = require('jsonwebtoken');
 const passport = require('passport');
 
+// bring in Profile (for user account deletion route)
+const Profile = require('../models/Profile.js');
 const User = require('../models/User.js');
 const user_secret = require('../../config/authConfig.js').USER_SECRET;
 
@@ -106,6 +108,22 @@ auth.post('/login', (req, res) => {
           .catch(err => console.log(err));
         };
       });
+});
+
+// @route:  DELETE api/auth
+// @descr:  delete current (logged-in) user's account (i.e. both user and profile)
+// @access: private
+auth.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+  // must delete profile first -- otherwise we won't have user's id to refer to
+  Profile.findOneAndDelete({ user: req.user.id })
+    .then(() => {
+      User.findOneAndDelete({ _id: req.user.id })
+      // if we can't locate account (i.e. user) by id, then we shouldn't be authorized to log in and delete our account (in other words, we don't really need error handling here)
+        .then (() => {
+          res.status(200).json({ user: 'account successfully deleted' });
+        })
+    })
+    .catch(err => res.status(500).json(err));
 });
 
 module.exports = auth;

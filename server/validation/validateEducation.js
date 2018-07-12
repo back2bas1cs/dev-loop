@@ -8,8 +8,6 @@ module.exports = function validateEducationInput(input) {
   // all possible (required) types of EDUCATION errors
   const educationErrors = {
     school: [],
-    fieldOfStudy: [],
-    degree: [],
     startDate: []
   };
 

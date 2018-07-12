@@ -1,6 +1,7 @@
 const express = require('express');
 const passport = require('passport');
 
+// import Profile and User models
 const Profile = require('../models/Profile.js');
 const User = require('../models/User.js');
 
@@ -93,7 +94,7 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
 
 // @route:  GET api/profile
 // @descr:  retrieve (logged-in) user's current profile
-// @access: private (add passport middleware)
+// @access: private
 prof.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   Profile.findOne({ user: req.user.id })
     .populate('user', ['name', 'avatar'])
@@ -109,7 +110,7 @@ prof.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
 });
 
 // @route:  GET api/profile/dev/:handle
-// @descr:  retrieve a user's profile by handle
+// @descr:  retrieve a user's profile (by handle)
 // @access: public
 prof.get('/dev/:handle', (req, res)=> {
   Profile.findOne({ handle: req.params.handle })
@@ -126,7 +127,7 @@ prof.get('/dev/:handle', (req, res)=> {
 });
 
 // @route:  GET api/profile/user/:user_id
-// @descr:  retrieve a user's profile by user_id
+// @descr:  retrieve a user's profile (by user_id)
 // @access: public
 prof.get('/user/:user_id', (req, res)=> {
   Profile.findOne({ user: req.params.user_id })
@@ -197,7 +198,7 @@ prof.delete('/education/:education_id', passport.authenticate('jwt', { session: 
     .then(profile => {
       // filter out education section from array, and re-assign updated array
       const updatedEducation = profile.education
-        .filter(section =>section.id !== req.params.education_id);
+        .filter(section => section.id !== req.params.education_id);
       profile.education = updatedEducation;
       // save profile with updated education
       profile.save()
@@ -283,6 +284,21 @@ prof.delete('/experience/:experience_id', passport.authenticate('jwt', { session
         .then(updatedProfile => res.status(200).json(updatedProfile));
     })
     .catch(err => res.status(404).json(err));
+});
+
+// @route:  DELETE api/profile
+// @descr:  delete current (logged-in) user's profile
+// @access: private
+prof.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.findOneAndDelete({ user: req.user.id })
+    .then(profile => {
+      if (profile) {
+        res.status(200).json({ profile: 'profile successfully deleted' })
+      } else {
+        res.status(404).json({ profile: `you don't have a profile to delete` })
+      }
+    })
+    .catch(err => res.status(500).json(err));
 });
 
 module.exports = prof;
