@@ -20,7 +20,7 @@ const User = new Schema({
   avatar: { type: String },
   date: {
     type: Date,
-    default: Date.now()
+    default: Date.now
   }
 });
 

@@ -4,10 +4,11 @@ const bcrypt =  require('bcryptjs');
 const JWT = require('jsonwebtoken');
 const passport = require('passport');
 
-// bring in Profile (for user account deletion route)
+// bring in Profile (for user account deletion route), and User model
 const Profile = require('../models/Profile.js');
 const User = require('../models/User.js');
-const user_secret = require('../../config/authConfig.js').USER_SECRET;
+
+const user_secret = require('../config/authConfig.js').USER_SECRET;
 
 const validateRegistrationInput = require('../validation/validateRegistration.js');
 const validateLoginInput = require('../validation/validateLogin.js');

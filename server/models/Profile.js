@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 const Profile = new Schema({
   date: {
     type: Date,
-    default: Date.now()
+    default: Date.now
   },
   user: {
     type: Schema.Types.ObjectId,
@@ -68,7 +68,7 @@ const Profile = new Schema({
       },
       endDate: {
         type: Date,
-        default: Date.now()
+        default: Date.now
       }
       // organizations: {
       //   name: {
@@ -98,7 +98,7 @@ const Profile = new Schema({
       },
       endDate: {
         type: Date,
-        default: Date.now()
+        default: Date.now
       },
       summary: { type: String }
     }

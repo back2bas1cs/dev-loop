@@ -4,7 +4,7 @@ const bodyParser = require('body-parser');
 const passport = require('passport');
 
 // require in DB config.
-const db = require('../config/dbConfig.js').mongoURI;
+const db = require('./config/dbConfig.js').mongoURI;
 
 // connect to mongoDB/mLab
 mongoose.connect(db)
@@ -20,7 +20,7 @@ app.use(bodyParser.json());
 // passport middleware
 app.use(passport.initialize());
 // bring in passport config.
-require('../config/passport.js')(passport);
+require('./config/passport.js')(passport);
 
 // import routes for user authentication, profiles, and network feed/posts
 const auth = require('../server/api/auth.js');

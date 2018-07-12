@@ -25,7 +25,7 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   }
 
   const userProfile = {
-    // name, email, and avatar are attached to user id
+    // name, email, and avatar are attached to user id (can populate later)
     user: req.user.id,
     handle: req.body.handle || null,
     title: req.body.title || null,
@@ -68,7 +68,8 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
         Profile.findOne({ handle: userProfile.handle })
           .then(profileWithHandle => {
             // again, must validate handle by checking if it already belongs to another user, or matches the user's current handle
-            if (profileWithHandle && String(profileWithHandle.user) !== userProfile.user) {
+            if (profileWithHandle &&
+                profileWithHandle.user.toString() !== userProfile.user) {
               // if input matches a handle used by a different user, throw error
               profileErrors['handle'].push('sorry, that handle is already taken');
               return res.status(400).json(profileErrors);
