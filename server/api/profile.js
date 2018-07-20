@@ -17,7 +17,7 @@ const prof = express.Router();
 // @route:  POST api/profile
 // @descr:  create/update user profile
 // @access: private (add passport middleware)
-prof.put('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
 
   const { profileErrors, isValidProfile } = validateProfileInput(req.body);
   // check PROFILE input validation for errors
@@ -83,9 +83,7 @@ prof.put('/', passport.authenticate('jwt', { session: false }), (req, res) => {
                 // return newly UPDATED version of document
                 { new: true }
               )
-              .then(updatedProfile => {
-                res.status(200).json(updatedProfile);
-              })
+              .then(updatedProfile => res.status(200).json(updatedProfile))
               .catch(err => res.status(404).json(err));
             }
           })
@@ -258,10 +256,10 @@ prof.delete('/education/:education_id', passport.authenticate('jwt', { session: 
     .catch(err => res.status(404).json(err));
 });
 
-// @route:  POST api/profile/education/degree
-// @descr:  add new field & degree to given education section of profile (by education_id)
+// @route:  PUT api/profile/education/degree
+// @descr:  add new field/degree to given education section of profile (by education_id)
 // @access: private
-prof.get('/education/:education_id', passport.authenticate('jwt', { session: false }), (req, res) => {
+prof.put('/education/:education_id', passport.authenticate('jwt', { session: false }), (req, res) => {
 
   // const { degreeErrors, isValidDegree } = validateFieldAndDegreeInput(req.body);
   // // check EDUCATION input validation for errors
@@ -310,7 +308,7 @@ prof.post('/experience', passport.authenticate('jwt', { session: false }), (req,
         endDate: req.body.endDate,
         summary: req.body.summary
       };
-      // add new experience to experience array (from Profile model)
+      // add new experience to "experience" array (on Profile model)
       profile.experience.unshift(newExperienceSection);
       profile.save()
         .then(updatedProfile => {

@@ -11,7 +11,7 @@ const Post = new Schema({
   // so user posts/comments aren't deleted with their accounts
   name: { type: String },
   avatar: { type: String },
-  post: {
+  text: {
     type: String,
     min: 12,
     max: 400,
@@ -41,7 +41,7 @@ const Post = new Schema({
       },
       name: { type: String },
       avatar: { type: String },
-      comment: {
+      text: {
         type: String,
         min: 8,
         max: 250,

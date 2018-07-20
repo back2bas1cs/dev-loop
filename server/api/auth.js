@@ -32,7 +32,7 @@ auth.post('/register', (req, res) => {
       // if user exists, throw error
       if (user) {
         registrationErrors['email'].push('email is already registered with devLoop');
-        res.status(400).json(registrationErrors);
+        return res.status(400).json(registrationErrors);
       } else {
         // add avatar/icon from gravatar (check to see if email is registered with gravatar, else assign default user icon)
         const avatar = gravatar.url(req.body.email, {
@@ -55,7 +55,7 @@ auth.post('/register', (req, res) => {
             // save() new instance of user to our DB, with encrypted password
             newUser.save()
               .then(user => res.status(200).json(user))
-              .catch(err => console.log(err));
+              .catch(err => res.status(500).json(err));
           });
         });
       }
@@ -81,7 +81,7 @@ auth.post('/login', (req, res) => {
       if (!user) {
         // throw unregistered email error here, where we access DB
         loginErrors['email'].push('email is not registered with devLoop');
-        res.status(404).json(loginErrors);
+        return res.status(404).json(loginErrors);
       } else {
         // use bcrypt to check if client-side password matches stored/hashed password
         bcrypt.compare(password, user.password)
@@ -95,7 +95,7 @@ auth.post('/login', (req, res) => {
               };
               // "sign" JWT and send back to client so they may access protected routes
               JWT.sign(payload, user_secret, { expiresIn: ( 6 * 3600 ) }, (err, token) => {
-                res.json({
+                return res.json({
                   success: true,
                   token: 'Bearer ' + token
                 });
@@ -103,10 +103,10 @@ auth.post('/login', (req, res) => {
             } else {
               // throw error if given email is registered, but submitted/input password does not match encrypted password stored in DB
               loginErrors['password'].push('incorrect email/password combination');
-              res.status(401).json(loginErrors);
+              return res.status(401).json(loginErrors);
             }
           })
-          .catch(err => console.log(err));
+          .catch(err => res.status(500).json(err));
         };
       });
 });
@@ -115,14 +115,16 @@ auth.post('/login', (req, res) => {
 // @descr:  delete current (logged-in) user's account (i.e. both user and profile)
 // @access: private
 auth.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-  // must profile first/user second -- otherwise we won't have user's id to refer to
+  // must delete profile first -- otherwise we won't have user's id to refer to
   Profile.findOneAndDelete({ user: req.user.id })
     .then(() => {
       User.findOneAndDelete({ _id: req.user.id })
       // if we can't locate account (i.e. user) by id, then we shouldn't be authorized to log in and delete our account (in other words, we don't really need error handling here)
         .then (() => {
-          res.status(200).json({ user: 'account successfully deleted' });
-        })
+          return res.status(200).json({
+            user: 'account successfully deleted'
+          });
+        });
     })
     .catch(err => res.status(500).json(err));
 });
