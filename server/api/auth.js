@@ -115,7 +115,7 @@ auth.post('/login', (req, res) => {
 // @descr:  delete current (logged-in) user's account (i.e. both user and profile)
 // @access: private
 auth.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-  // must delete profile first -- otherwise we won't have user's id to refer to
+  // must profile first/user second -- otherwise we won't have user's id to refer to
   Profile.findOneAndDelete({ user: req.user.id })
     .then(() => {
       User.findOneAndDelete({ _id: req.user.id })

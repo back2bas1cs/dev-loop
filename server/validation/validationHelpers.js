@@ -1,4 +1,10 @@
 module.exports = {
+  // use this function to help check if DB collection is empty
+  // (since mongo returns empty array for empty collections)
+  isEmptyCollection: input => {
+    return !Array.isArray(input) || !input.length;
+  },
+
   isEmptyField: input => {
     return (input.constructor === String || typeof input === 'string') &&
     input.length === 0;

@@ -7,7 +7,7 @@ const Post = new Schema({
     type: Schema.Types.ObjectId,
     ref: 'user'
   },
-  // include name & avatar here (instead of "populating" upon accessing)
+  // include name and avatar here (instead of "populating" upon accessing)
   // so user posts/comments aren't deleted with their accounts
   name: { type: String },
   avatar: { type: String },
@@ -17,11 +17,15 @@ const Post = new Schema({
     max: 400,
     required: true
   },
+  edited: {
+    type: Boolean,
+    default: false
+  },
   date: {
     type: Date,
     default: Date.now
   },
-  thumbs: [
+  likes: [
     {
       user: {
         type: Schema.Types.ObjectId,
@@ -47,7 +51,7 @@ const Post = new Schema({
         type: Date,
         default: Date.now
       },
-      thumbs: [
+      likes: [
         {
           user: {
             type: Schema.Types.ObjectId,

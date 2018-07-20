@@ -9,6 +9,7 @@ const validateProfileInput = require('../validation/validateProfile.js');
 const validateEducationInput = require('../validation/validateEducation.js');
 // const validateFieldAndDegreeInput = require('../validation/validateFieldAndDegree.js');
 const validateExperienceInput = require('../validation/validateExperience.js');
+const { isEmptyCollection } =  require('../validation/validationHelpers.js');
 
 // initialize PROFILE (aka: "prof") router
 const prof = express.Router();
@@ -16,7 +17,7 @@ const prof = express.Router();
 // @route:  POST api/profile
 // @descr:  create/update user profile
 // @access: private (add passport middleware)
-prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+prof.put('/', passport.authenticate('jwt', { session: false }), (req, res) => {
 
   const { profileErrors, isValidProfile } = validateProfileInput(req.body);
   // check PROFILE input validation for errors
@@ -104,7 +105,9 @@ prof.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
         res.status(200).json(profile);
       } else {
         // profile not found (i.e. not yet been created)
-        res.status(404).json({ profile: 'profile not yet created' })
+        res.status(404).json({
+          profile: 'profile not yet created'
+        });
       }
     })
     .catch(err => res.status(400).json(err));
@@ -121,45 +124,92 @@ prof.get('/dev/:handle', (req, res)=> {
         res.status(200).json(profile);
       } else {
         // profile not found (i.e. not yet been created, or user doesn't exist)
-        res.status(404).json({ profile: 'cannot find profile matching given handle' })
+        res.status(404).json({
+          profile: 'cannot find profile matching given handle'
+        });
       }
     })
-    .catch(err => res.status(404).json(err));
+    .catch(err => res.status(404).json(err)); // do we need this?
 });
 
 // @route:  GET api/profile/user/:user_id
 // @descr:  retrieve a user's profile (by user_id)
 // @access: public
 prof.get('/user/:user_id', (req, res)=> {
-  Profile.findOne({ user: req.params.user_id })
-    .populate('user', ['name', 'avatar'])
-    .then(profile => {
-      if (profile) {
-        res.status(200).json(profile);
+  User.findById(req.params.user_id)
+    .then(user => {
+      if (!user) {
+        // user doesn't exist in DB
+        res.status(404).json({
+          user: 'no user exists with that user id'
+        });
       } else {
-        // profile not found (i.e. not yet been created)
-        res.status(404).json({ profile: 'no profile exists yet for this user' })
+        Profile.findOne({ user: req.params.user_id })
+          .populate('user', ['name', 'avatar'])
+          .then(profile => {
+            if (profile) {
+              res.status(200).json(profile);
+            } else {
+              // profile not found (i.e. not yet been created)
+              res.status(404).json({
+                profile: 'no profile exists yet for this user'
+              });
+            }
+          });
       }
     })
     // user doesn't exist in DB
-    .catch(err => res.status(404).json({ user: 'no user exists with that user id'}));
+    .catch(err => {
+      res.status(404).json({
+        user: 'no user exists with that user id'
+      });
+    });
 });
 
 // @route:  GET api/profile/all
-// @descr:  retrieve all user's profiles (if any exist)
+// @descr:  retrieve all user profiles (if any exist)
 // @access: public
 prof.get('/all', (req, res) => {
-  Profile.find()
-    .then(profiles => {
-      if (profiles) {
-        res.status(200).json(profiles);
+  User.find()
+    .then(users => {
+      if (isEmptyCollection(users)) {
+        // no users are currently registered
+        res.status(404).json({
+          critical: 'there are NO users currently registered with devLoop. in other words, the site is a complete failure, so far... please be the first to register, and invite your friends!'
+        });
       } else {
-        // no profiles have been created
-        res.status(404).json({ profile: 'no registered user has created a profile yet. please be the first to create a profile!' })
+        Profile.find()
+          .then(profiles => {
+            if (isEmptyCollection(profiles)) {
+              // no profiles have been created
+              res.status(404).json({
+                profile: 'no registered user has created a profile yet. please be the first to create a profile!'
+              });
+            } else {
+              res.status(200).json(profiles);
+            }
+          });
+      }
+    });
+});
+
+// @route:  DELETE api/profile
+// @descr:  delete current (logged-in) user's profile
+// @access: private
+prof.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.findOneAndDelete({ user: req.user.id })
+    .then(profile => {
+      if (profile) {
+        res.status(200).json({
+          profile: 'profile successfully deleted'
+        });
+      } else {
+        res.status(404).json({
+          profile: `you don't have a profile to delete`
+        });
       }
     })
-    // no users are currently registered
-    .catch(err => res.status(404).json({ critical: 'there are NO users currently registered with devLoop. in other words, the site is a complete failure, so far... please be the first to register, and invite your friends!' }));
+    .catch(err => res.status(500).json(err));
 });
 
 // @route:  POST api/profile/education
@@ -181,7 +231,7 @@ prof.post('/education', passport.authenticate('jwt', { session: false }), (req, 
         startDate: req.body.startDate,
         endDate: req.body.endDate
       };
-      // add new experience to experience array (from Profile model)
+      // add new education to education array (from Profile model)
       profile.education.unshift(newEducationSection);
       profile.save()
         .then(updatedProfile => {
@@ -192,7 +242,7 @@ prof.post('/education', passport.authenticate('jwt', { session: false }), (req, 
 });
 
 // @route:  DELETE api/profile/education/:education_id
-// @descr:  delete given education section from user's profile
+// @descr:  delete given education section from user's profile (by education_id)
 // @access: private
 prof.delete('/education/:education_id', passport.authenticate('jwt', { session: false}), (req, res) => {
   Profile.findOne({ user: req.user.id })
@@ -209,7 +259,7 @@ prof.delete('/education/:education_id', passport.authenticate('jwt', { session: 
 });
 
 // @route:  POST api/profile/education/degree
-// @descr:  add new field and degree to given education section of profile
+// @descr:  add new field & degree to given education section of profile (by education_id)
 // @access: private
 prof.get('/education/:education_id', passport.authenticate('jwt', { session: false }), (req, res) => {
 
@@ -271,7 +321,7 @@ prof.post('/experience', passport.authenticate('jwt', { session: false }), (req,
 });
 
 // @route:  DELETE api/profile/experience/:experience_id
-// @descr:  delete given experience section from user's profile
+// @descr:  delete given experience section from user's profile (by experience_id)
 // @access: private
 prof.delete('/experience/:experience_id', passport.authenticate('jwt', { session: false }), (req, res) => {
   Profile.findOne({ user: req.user.id })
@@ -285,21 +335,6 @@ prof.delete('/experience/:experience_id', passport.authenticate('jwt', { session
         .then(updatedProfile => res.status(200).json(updatedProfile));
     })
     .catch(err => res.status(404).json(err));
-});
-
-// @route:  DELETE api/profile
-// @descr:  delete current (logged-in) user's profile
-// @access: private
-prof.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
-  Profile.findOneAndDelete({ user: req.user.id })
-    .then(profile => {
-      if (profile) {
-        res.status(200).json({ profile: 'profile successfully deleted' })
-      } else {
-        res.status(404).json({ profile: `you don't have a profile to delete` })
-      }
-    })
-    .catch(err => res.status(500).json(err));
 });
 
 module.exports = prof;
