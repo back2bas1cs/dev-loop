@@ -34,7 +34,7 @@ auth.post('/register', (req, res) => {
         registrationErrors['email'].push('email is already registered with devLoop');
         return res.status(400).json(registrationErrors);
       } else {
-        // add avatar/icon from gravatar (check to see if email is registered with gravatar, else assign default user icon)
+        // add avatar/icon from gravatar (check if email is registered with gravatar, otherwise assign default user icon)
         const avatar = gravatar.url(req.body.email, {
           s: '300', // size
           r: 'pg',  // photo rating (let's keep things PG)
@@ -54,7 +54,7 @@ auth.post('/register', (req, res) => {
             newUser.password = hash;
             // save() new instance of user to our DB, with encrypted password
             newUser.save()
-              .then(user => res.status(200).json(user))
+              .then(user => res.status(201).json(user))
               .catch(err => res.status(500).json(err));
           });
         });
@@ -93,7 +93,7 @@ auth.post('/login', (req, res) => {
                 name: user.name,
                 avatar: user.avatar
               };
-              // "sign" JWT and send back to client so they may access protected routes
+              // sign JWT and send back to client so they may access protected routes
               JWT.sign(payload, user_secret, { expiresIn: ( 6 * 3600 ) }, (err, token) => {
                 return res.json({
                   success: true,
@@ -119,7 +119,7 @@ auth.delete('/', passport.authenticate('jwt', { session: false }), (req, res) =>
   Profile.findOneAndDelete({ user: req.user.id })
     .then(() => {
       User.findOneAndDelete({ _id: req.user.id })
-      // if we can't locate account (i.e. user) by id, then we shouldn't be authorized to log in and delete our account (in other words, we don't really need error handling here)
+      // if we can't locate account (i.e. user) by id, then we shouldn't be authorized to log in and delete our account (i.e. we don't really need error handling here)
         .then (() => {
           return res.status(200).json({
             user: 'account successfully deleted'

@@ -1,0 +1,94 @@
+$font-stack: Lato, 'Trebuchet MS', 'Helvetica Neue', Helvetica;
+$brand-font: 'Kaushan Script', 'Helvetica Neue', Helvetica, Arial, cursive;
+$first-color: #28343b;
+$second-color: white;
+
+body {
+  // box-sizing: border-box;
+}
+
+#landing-welcome {
+  background:
+    linear-gradient(
+      rgba(210, 255, 82, 0.45),
+      rgba(40, 52, 59, 0.7)
+    )
+    /* bottom, image */
+    // url(image.jpg);
+}
+
+.nav-toggled {
+  height: 60px;
+  padding: 0px 80px 0 80px;
+  background-color: $first-color;
+}
+
+
+nav {
+  padding: 20px 80px 0 80px;
+  margin-bottom: 20px;
+  background-color: #fff;
+  background-color: rgba(255, 255, 255, 0);
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: 80px;
+  font-family: $font-stack;
+  font-size: 1rem;
+  overflow: hidden;
+  color: $first-color;
+
+
+  .nav-brand {
+    font-family: $brand-font;
+    a {
+      color: yellow;
+    }
+  }
+
+  .nav-sections {
+    display: flex;
+    justify-content: space-between;
+    list-style-type: none;
+    margin-left: 0;
+    margin-top: 15px;
+  }
+
+  .nav-auth div {
+    display: inline-block;
+    margin-left: 2rem;
+  }
+
+  input[type="text"],
+  input[type="password"] {
+    border-radius: 2px;
+    margin-right: 15px;
+    padding-left: 7px;
+  }
+
+  input[type="submit"] {
+    border: 1px solid white;
+    border-radius: 2px;
+    background-color: transparent;
+    color: white;
+
+    &:hover {
+      color: $first-color;
+      background-color: $second-color;
+    }
+  }
+
+  a {
+    color: $second-color;
+  }
+
+  a:hover {
+    text-decoration: none;
+    color: $second-color;
+  }
+}
+
+.front-page-section {
+  height: 100vh;
+  border: 4px solid dodgerblue;
+}

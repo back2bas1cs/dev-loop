@@ -11,11 +11,10 @@ module.exports = function validateExperienceInput(input) {
     company: [],
     startDate: []
   };
-  
+
   // first, check if any EXPERIENCE input fields are empty -- this should always be the first error we pop off the given "error stack"
   for (let prop in input) {
     if (isEmptyField(input[prop]) && experienceErrors[prop] !== undefined) {
-      console.log(prop)
       experienceErrors[prop].push(`${prop} is required`);
     };
   }

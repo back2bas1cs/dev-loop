@@ -32,7 +32,7 @@ feed.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   };
   // save newly constructed post
   return new Post(newPost).save()
-    .then(savedPost => res.status(200).json(savedPost))
+    .then(savedPost => res.status(201).json(savedPost))
     .catch(err => res.status(500).json(err));
 });
 
@@ -154,10 +154,7 @@ feed.put('/like/:post_id', passport.authenticate('jwt', { session: false }), (re
       }).length === 0) {
         post.likes.unshift({ user: req.user.id });
         post.save()
-          .then(updatedPost => {
-            return res.status(200).json(updatedPost);
-          });
-          // .catch (?)
+          .then(updatedPost => res.status(201).json(updatedPost));
       } else {
         // user can't "like" given post more than once
         return res.status(400).json({
@@ -189,9 +186,7 @@ feed.put('/unlike/:post_id', passport.authenticate('jwt', { session: false }), (
           });
         // then, save post with updated "likes" array to DB
         post.save()
-          .then(updatedPost => {
-            return res.status(200).json(updatedPost);
-          })
+          .then(updatedPost => res.status(200).json(updatedPost))
           .catch(err => {
             return res.status(500).json({
               post: 'there was an issue "un-liking" this post',
@@ -227,7 +222,7 @@ feed.put('/comment/:post_id', passport.authenticate('jwt', { session: false }), 
   Post.findById(req.params.post_id)
     .then(post => {
       // initialize new comment
-      let newComment = {
+      const newComment = {
         user: req.user.id,
         name: req.user.name,
         avatar: req.user.avatar,
@@ -251,17 +246,16 @@ feed.put('/comment/:post_id', passport.authenticate('jwt', { session: false }), 
     });
 });
 
+// NOTE: could be nice to clear up the error handling here (i.e. differentiate between not being able to find comment with specified id, and not having permission to do so) -- although it probably won't matter since JWT is already authenticating...
 // @route:  DELETE api/feed/:post_id/:comment_id
 // @desc:   delete given comment from given post (by post_id AND comment_id)
 // @access: private
 feed.delete('/:post_id/:comment_id', passport.authenticate('jwt', { session: false }), (req, res) => {
   Post.findById(req.params.post_id)
     .then(post => {
-      // NOTE:change this logic so that we're checking for
-      // matching user id AND comment id
       if (post.comments.filter(comment => {
-        return comment.user.toString() === req.user.id &&
-          comment.id === req.params.comment_id;
+        return comment.id === req.params.comment_id &&
+          comment.user.toString() === req.user.id;
       }).length !== 0) {
         // replace "comments" array with new array w/"comment" object by user (matching id) filtered out
         post.comments = post.comments
@@ -279,7 +273,7 @@ feed.delete('/:post_id/:comment_id', passport.authenticate('jwt', { session: fal
           });
       } else {
         // user can only delete comment if it exists
-        return res.status(400).json({
+        return res.status(404).json({
           comment: 'could not find comment matching that id'
         });
       }

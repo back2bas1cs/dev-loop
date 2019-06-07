@@ -39,7 +39,7 @@ const Profile = new Schema({
     type: [String],
     required: true
   },
-  // (new) education section
+  // new education section
   education: [
     {
       school: {

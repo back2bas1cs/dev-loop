@@ -7,7 +7,7 @@ const User = require('../models/User.js');
 
 const validateProfileInput = require('../validation/validateProfile.js');
 const validateEducationInput = require('../validation/validateEducation.js');
-// const validateFieldAndDegreeInput = require('../validation/validateFieldAndDegree.js');
+const validateFieldAndDegreeInput = require('../validation/validateFieldAndDegree.js');
 const validateExperienceInput = require('../validation/validateExperience.js');
 const { isEmptyCollection } =  require('../validation/validationHelpers.js');
 
@@ -28,22 +28,22 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   const userProfile = {
     // name, email, and avatar are attached to user id (can populate later)
     user: req.user.id,
-    handle: req.body.handle || null,
-    title: req.body.title || null,
-    location: req.body.location || null,
-    company: req.body.company || null,
-    website: req.body.website || null,
-    location: req.body.location || null,
+    handle: req.body.handle.toLowerCase(),
+    title: req.body.title,
+    location: req.body.location,
+    company: req.body.company,
+    website: req.body.website,
+    location: req.body.location,
     social: {
-      linkedin: req.body.linkedin || null,
-      facebook: req.body.facebook || null,
-      twitter: req.body.twitter || null,
-      youtube: req.body.youtube || null,
+      linkedin: req.body.linkedin,
+      facebook: req.body.facebook,
+      twitter: req.body.twitter,
+      youtube: req.body.youtube,
     },
-    github: req.body.github || null,
-    bio: req.body.bio || null,
+    github: req.body.github,
+    bio: req.body.bio,
     // save skills as array of strings
-    skills: req.body.skills.split(',') || null
+    skills: req.body.skills.split(',')
   };
 
   // find user's profile in DB by user id
@@ -57,11 +57,11 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
             if (profileWithHandle) {
               // if handle exists and belongs to another user
               profileErrors['handle'].push('sorry, that handle is already taken');
-              return res.status(400).json(profileErrors);
+              return res.status(403).json(profileErrors);
             } else {
               // save new profile (with new/available handle)
               new Profile(userProfile).save()
-                .then(newProfile => res.status(200).json(newProfile));
+                .then(newProfile => res.status(201).json(newProfile));
             }
           });
       } else {
@@ -73,7 +73,7 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
                 profileWithHandle.user.toString() !== userProfile.user) {
               // if input matches a handle used by a different user, throw error
               profileErrors['handle'].push('sorry, that handle is already taken');
-              return res.status(400).json(profileErrors);
+              return res.status(403).json(profileErrors);
             } else {
               // save new profile (with new/valid handle)
               Profile.findOneAndUpdate(
@@ -87,7 +87,7 @@ prof.post('/', passport.authenticate('jwt', { session: false }), (req, res) => {
               .catch(err => res.status(404).json(err));
             }
           })
-          .catch(err => res.status(400).json(err));
+          .catch(err => res.status(404).json(err));
       }
     });
 });
@@ -99,16 +99,16 @@ prof.get('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   Profile.findOne({ user: req.user.id })
     .populate('user', ['name', 'avatar'])
     .then(profile => {
-      if (profile) {
-        res.status(200).json(profile);
-      } else {
+      if (!profile) {
         // profile not found (i.e. not yet been created)
-        res.status(404).json({
-          profile: 'profile not yet created'
+        return res.status(404).json({
+          profile: 'profile has not yet been created'
         });
+      } else {
+        return res.status(200).json(profile);
       }
     })
-    .catch(err => res.status(400).json(err));
+    .catch(err => res.status(404).json(err));
 });
 
 // @route:  GET api/profile/dev/:handle
@@ -118,16 +118,16 @@ prof.get('/dev/:handle', (req, res)=> {
   Profile.findOne({ handle: req.params.handle })
     .populate('user', ['name', 'avatar'])
     .then(profile => {
-      if (profile) {
-        res.status(200).json(profile);
-      } else {
+      if (!profile) {
         // profile not found (i.e. not yet been created, or user doesn't exist)
-        res.status(404).json({
+        return res.status(404).json({
           profile: 'cannot find profile matching given handle'
         });
+      } else {
+        return res.status(200).json(profile);
       }
     })
-    .catch(err => res.status(404).json(err)); // do we need this?
+    .catch(err => res.status(404).json(err));
 });
 
 // @route:  GET api/profile/user/:user_id
@@ -138,27 +138,27 @@ prof.get('/user/:user_id', (req, res)=> {
     .then(user => {
       if (!user) {
         // user doesn't exist in DB
-        res.status(404).json({
+        return res.status(404).json({
           user: 'no user exists with that user id'
         });
       } else {
         Profile.findOne({ user: req.params.user_id })
           .populate('user', ['name', 'avatar'])
           .then(profile => {
-            if (profile) {
-              res.status(200).json(profile);
-            } else {
+            if (!profile) {
               // profile not found (i.e. not yet been created)
-              res.status(404).json({
+              return res.status(404).json({
                 profile: 'no profile exists yet for this user'
               });
+            } else {
+              return res.status(200).json(profile);
             }
           });
       }
     })
     // user doesn't exist in DB
     .catch(err => {
-      res.status(404).json({
+      return res.status(404).json({
         user: 'no user exists with that user id'
       });
     });
@@ -172,7 +172,7 @@ prof.get('/all', (req, res) => {
     .then(users => {
       if (isEmptyCollection(users)) {
         // no users are currently registered
-        res.status(404).json({
+        return res.status(404).json({
           critical: 'there are NO users currently registered with devLoop. in other words, the site is a complete failure, so far... please be the first to register, and invite your friends!'
         });
       } else {
@@ -180,11 +180,11 @@ prof.get('/all', (req, res) => {
           .then(profiles => {
             if (isEmptyCollection(profiles)) {
               // no profiles have been created
-              res.status(404).json({
+              return res.status(404).json({
                 profile: 'no registered user has created a profile yet. please be the first to create a profile!'
               });
             } else {
-              res.status(200).json(profiles);
+              return res.status(200).json(profiles);
             }
           });
       }
@@ -197,13 +197,13 @@ prof.get('/all', (req, res) => {
 prof.delete('/', passport.authenticate('jwt', { session: false }), (req, res) => {
   Profile.findOneAndDelete({ user: req.user.id })
     .then(profile => {
-      if (profile) {
-        res.status(200).json({
-          profile: 'profile successfully deleted'
+      if (!profile) {
+        return res.status(404).json({
+          profile: `you don't have a profile to delete`
         });
       } else {
-        res.status(404).json({
-          profile: `you don't have a profile to delete`
+        return res.status(200).json({
+          profile: 'profile successfully deleted'
         });
       }
     })
@@ -232,9 +232,7 @@ prof.post('/education', passport.authenticate('jwt', { session: false }), (req, 
       // add new education to education array (from Profile model)
       profile.education.unshift(newEducationSection);
       profile.save()
-        .then(updatedProfile => {
-          res.status(200).json(updatedProfile);
-        })
+        .then(updatedProfile => res.status(201).json(updatedProfile))
         .catch(err => res.status(500).json(err));
     });
 });
@@ -251,39 +249,65 @@ prof.delete('/education/:education_id', passport.authenticate('jwt', { session: 
       profile.education = updatedEducation;
       // save profile with updated education
       profile.save()
-        .then(updatedProfile => res.json(updatedProfile));
+        .then(updatedProfile => res.status(200).json(updatedProfile));
     })
     .catch(err => res.status(404).json(err));
 });
 
-// @route:  PUT api/profile/education/degree
+// @route:  PUT api/profile/education/:education_id
 // @descr:  add new field/degree to given education section of profile (by education_id)
 // @access: private
-prof.put('/education/:education_id', passport.authenticate('jwt', { session: false }), (req, res) => {
+prof.post('/education/:education_id', passport.authenticate('jwt', { session: false }), (req, res) => {
 
-  // const { degreeErrors, isValidDegree } = validateFieldAndDegreeInput(req.body);
-  // // check EDUCATION input validation for errors
-  // if (!isValidDegree) {
-  //   return res.status(400).json(degreeErrors);
-  // }
-  //
-  // Profile.findOne({ user: req.user.id })
-  //   .then(profile => {
-  //     if (profile) {
-  //       profile.education
-  //         .filter(item => item.id === req.params.education_id)
-  //     Profile.findOneAndUpdate(
-  //         { user: req.user.id },
-  //         // object model we want to use to update document
-  //         { $set: userProfile },
-  //         // return newly UPDATED version of document
-  //         { new: true }
-  //       )
-  //     console.log(...education)
-  //
-  //     }
-  //
-  //   });
+  const { degreeErrors, isValidDegree } = validateFieldAndDegreeInput(req.body);
+  // check FIELD/DEGREE input validation for errors
+  if (!isValidDegree) {
+    return res.status(400).json(degreeErrors);
+  }
+
+  Profile.findOne({ user: req.user.id })
+    .then(profile => {
+      if (profile) {
+        const newDegree = {
+          fieldOfStudy: req.body.fieldOfStudy,
+          degree: req.body.degree,
+          gpa: req.body.gpa
+        };
+        profile.education
+          .find(matchingEdu => {
+            return matchingEdu.id === req.params.education_id;
+          })
+          .fieldAndDegree
+          .push(newDegree);
+        profile.save()
+          .then(updatedProfile => {
+            return res.status(200).json(profile);
+          });
+      // } else {
+      // ????????????
+      // }
+      }
+    })
+    .catch(err => res.status(404).json(err));
+});
+
+// @route:  DELETE api/profile/education/:education_id/:degree_id
+// @descr:  delete given field/degree (by education_id AND degree_id )
+// @access: private
+prof.delete('/education/:education_id/:degree_id', passport.authenticate('jwt', { session: false }), (req, res) => {
+  Profile.findOne({ user: req.user.id })
+    .then(profile => {
+      profile.education = profile.education
+        .find(matchingEdu => {
+          return matchingEdu.id === req.params.education_id;
+        })
+        .fieldAndDegree
+        .filter(matchingDegree => {
+          return matchingDegree !== req.params.education_id;
+        });
+        profile.save()
+          .then(res.status(200).json(profile));
+    });
 
 });
 
@@ -311,9 +335,7 @@ prof.post('/experience', passport.authenticate('jwt', { session: false }), (req,
       // add new experience to "experience" array (on Profile model)
       profile.experience.unshift(newExperienceSection);
       profile.save()
-        .then(updatedProfile => {
-          res.status(200).json(updatedProfile);
-        })
+        .then(updatedProfile => res.status(201).json(updatedProfile))
         .catch(err => res.status(500).json(err));
     });
 });
